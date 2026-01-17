@@ -1,59 +1,78 @@
-## Todo-FastAPI
+# Instagram Analytics Dashboard
 
-Simple FastAPI CRUD service for managing products stored in PostgreSQL using SQLAlchemy ORM.
+A simple and powerful platform to track Instagram engagement metrics and visualize your social media performance.
 
-### Stack
+![Dashboard Preview](./image.png)
 
-- FastAPI
-- SQLAlchemy
-- PostgreSQL
-- Uvicorn (dev server)
+## Overview
+
+This application helps you analyze Instagram posts with real-time engagement tracking. View likes, comments, and detailed analytics all in one place. Features a simple CRUD backend for managing product data with a modern React frontend.
+
+## Key Features
+
+- **Engagement Overview** - Track likes and comments across your posts
+- **Post Analytics** - Detailed metrics for each Instagram post
+- **Easy Navigation** - Simple and clean user interface
+- **Simple CRUD Backend** - Create, read, update, and delete products with ease
+
+## Tech Stack
+
+- **Backend** - FastAPI with Python
+- **Frontend** - React with Vite
+- **Database** - PostgreSQL with SQLAlchemy
+- **Charts** - Chart.js for data visualization
+
+## Getting Started
 
 ### Prerequisites
 
 - Python 3.11+
-- PostgreSQL running locally
-- Create a database (e.g., `products`) and user with permissions.
-- Update the connection string in `database.py` if it differs from your local setup.
+- Node.js 18+
+- PostgreSQL
 
-### Setup
+### Installation
 
-1. Install dependencies
+1. **Install Backend Dependencies**
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
+python -m venv venv
+source venv/bin/activate
 pip install fastapi uvicorn sqlalchemy psycopg2-binary
 ```
 
-2. Start the API
+2. **Install Frontend Dependencies**
+
+```bash
+cd frontend
+npm install
+```
+
+3. **Start the Backend**
 
 ```bash
 uvicorn main:app --reload
 ```
 
+4. **Start the Frontend**
+
+```bash
+cd frontend
+npm run dev
+```
+
 ### Endpoints
 
-- `GET /` – health check (“Hello world”).
-- `GET /allProducts` – list all products.
-- `POST /addProduct` – create a product.
-  ```json
-  {
-    "name": "Laptop",
-    "desc": "Ultrabook",
-    "price": 1200
-  }
-  ```
-- `POST /product/{id}` – fetch one product by id.
-- `PUT /update/{id}` – update an existing product (same body as create).
-- `DELETE /delete/{id}` – delete a product by id.
+**CRUD Operations:**
+
+- `GET /` - Health check
+- `GET /allProducts` - Retrieve all products
+- `POST /addProduct` - Create a new product
+- `POST /product/{id}` - Get product by ID
+- `PUT /update/{id}` - Update an existing product
+- `DELETE /delete/{id}` - Delete a product
 
 ### Notes
 
-- Database tables auto-create at startup via `Base.metadata.create_all`.
-- `id` is auto-incremented by the database; you only send `name`, `desc`, and `price` in requests.
-
-### Troubleshooting
-
-- If data is not saving, verify PostgreSQL is reachable and credentials in `database.py` are correct.
-- Ensure you call `db.commit()` after `db.add(...)` (already done in routes).
-- If you change the schema, drop/recreate the table or generate migrations.
+- Database tables auto-create at startup
+- `id` is auto-incremented by the database
+- Only send `name`, `desc`, and `price` in requests

@@ -1,75 +1,134 @@
-import { useEffect, useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-import {Bar} from "react-chartjs-2"
-import './App.css'
-import axios from "axios"
+import { useState } from "react";
+import { Bar } from "react-chartjs-2";
+import axios from "axios";
 import "chart.js/auto";
-
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [data, setdata] = useState([])
-  const [token, setToken] = useState()
-  const [chartData, setChartData] = useState(null)
-  const handle = () => {
-    
-    axios.post(`http://localhost:8000/instagram?token=${token}` ).then(res => {
-      console.log(res);
-      setdata(res.data);
-      let labels = res.data.data.data.map(name => (name.caption));
-      console.log(labels);
-      
+  const [data, setData] = useState([]);
+  const [token, setToken] = useState("");
+  const [chartData, setChartData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handle = async () => {
+    if (!token.trim()) return alert("Enter your access token");
+
+    try {
+      setLoading(true);
+      const res = await axios.post(`http://localhost:8000/instagram?token=${token}`);
+
+      const posts = res?.data?.data?.data || [];
+      setData(posts);
+
+      const labels = posts.map((p, i) => p.caption?.slice(0, 25) || `Post ${i + 1}`);
+
       setChartData({
         labels,
         datasets: [
           {
             label: "Likes",
-            data: res.data.data.data.map(likes => (likes.like_count))
+            data: posts.map((p) => p.like_count || 0),
           },
           {
             label: "Comments",
-            data: res.data.data.data.map(comment => (comment.comments_count))
-          }
-          // {
-          //   label: "Total Post",
-          //   data: 
-          // }
-        ]
+            data: posts.map((p) => p.comments_count || 0),
+          },
+        ],
       });
-    })
-
-  }
-  console.log(chartData);
-  
+    } catch (err) {
+      console.log(err);
+      alert("Failed to fetch Instagram data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <input type="text" placeholder='Enter your access key for IG' value={token} onChange={(e) => { setToken(e.target.value);  console.log(token);
-      }} />
-      <button onClick={handle}>Submit</button>
-      <ul style={{listStyle:"none"}}>
-        {
-          data?.data?.data?.map(data => (
-            <div style={{marginBottom:"20px"}}>
-              <li>{data.caption}</li>
-              {/* <li>{data.}</li> */}
-              <img style={{ width: "100px" }} src={data.media_url} alt="" />
-              <li>Likes : {data.like_count}</li>
-              <li>Comment : {data.comments_count}</li>
-            </div>
-            
-          ))
-        }
-      </ul>
+    <div className="page">
+      <div className="container">
 
-      {chartData && <Bar
-        // style={{width:"1000px", height:"200px"}}
-        // key={chartData.labels.length}
-        data={chartData}
-      />}
-    </>
-  )
+        <div className="header">
+          <h1 className="title">Instagram Analytics Dashboard</h1>
+          <p className="subtitle">
+            Fetch your posts + visualize Likes & Comments
+          </p>
+        </div>
+
+
+        <div className="topBar">
+          <input
+            className="input"
+            type="text"
+            placeholder="Paste your Instagram Access Token..."
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+          />
+          <button className="btn" onClick={handle} disabled={loading}>
+            {loading ? "Fetching..." : "Submit"}
+          </button>
+        </div>
+
+
+        {chartData && (
+          <div className="chartCard">
+            <div className="chartHeader">
+              <h2 className="chartTitle">Engagement Overview</h2>
+              <p className="chartSubtitle">Likes vs Comments (Top {data.length} posts)</p>
+            </div>
+
+            <div className="chartWrap">
+              <Bar data={chartData} />
+            </div>
+          </div>
+        )}
+
+        <div className="sectionHeader">
+          <h2 className="sectionTitle">Posts</h2>
+          <p className="sectionSubtitle">
+            Showing {data.length} posts
+          </p>
+        </div>
+
+        <div className="grid">
+          {data?.map((post) => (
+            <div key={post.id} className="card">
+              <div className="mediaBox">
+                {post.media_type === "VIDEO" ? (
+                  <video className="media" controls src={post.media_url}></video>
+                ) : (
+                  <img className="media" src={post.media_url} alt="post" />
+                )}
+              </div>
+
+              <div className="content">
+                <p className="caption">{post.caption || "No caption"}</p>
+
+                <div className="stats">
+                  <span className="pill">❤️ {post.like_count || 0}</span>
+                  <span className="pill">💬 {post.comments_count || 0}</span>
+                </div>
+
+                {post.permalink && (
+                  <a
+                    className="link"
+                    href={post.permalink}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open on Instagram →
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {!loading && data.length === 0 && (
+          <p className="empty">No data yet. Enter token and click Submit</p>
+        )}
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
